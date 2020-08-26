@@ -3,6 +3,8 @@ package com.guo.springcloud.service.impl;
 import com.guo.springcloud.dao.PaymentDao;
 import com.guo.springcloud.entities.Payment;
 import com.guo.springcloud.service.PaymentService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
