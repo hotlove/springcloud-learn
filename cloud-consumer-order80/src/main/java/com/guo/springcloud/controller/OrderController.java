@@ -4,6 +4,7 @@ package com.guo.springcloud.controller;
 import com.guo.springcloud.entities.CommonResult;
 import com.guo.springcloud.entities.Payment;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,7 @@ public class OrderController {
     private final String PAYMENT_URL = "http://CLOUD-PAYMENT-SERVICE"; // 方便使用负载均衡
 
     @Resource
-    private RestTemplate restTemplate;
+    private RestTemplate restTemplate; // forObject 类似于json forEntity会返回更详细得信息，比如头信息还有其他信息ResponseEntity
 
     @GetMapping("/consumer/payment/create")
     public CommonResult<Payment> create(Payment payment) {
@@ -34,5 +35,16 @@ public class OrderController {
     @GetMapping("/consumer/payment/get/{id}")
     public CommonResult<Payment> getPayment(@PathVariable("id") Long id) {
         return restTemplate.getForObject(PAYMENT_URL + "/payment/get/" + id , CommonResult.class);
+    }
+
+    @GetMapping("/consumer/payment/getForEntity/{id}")
+    public CommonResult<Payment> getPayment2(@PathVariable("id") Long id) {
+        ResponseEntity<CommonResult> entity = restTemplate.getForEntity(PAYMENT_URL + "/payment/get/" + id, CommonResult.class);
+        if (entity.getStatusCode().is2xxSuccessful()) {
+            // 如果请求成功了
+            return entity.getBody();
+        } else {
+            return new CommonResult<>(444, "操作失败");
+        }
     }
 }
