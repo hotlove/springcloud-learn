@@ -14,7 +14,8 @@ import org.springframework.web.client.RestTemplate;
 public class ApplicationContextConfig {
 
     @Bean
-    @LoadBalanced // 使resttemplate具有负载均衡能力
+    // 注释掉是为了证明使用自己写得ribbon
+//    @LoadBalanced // 使resttemplate具有负载均衡能力
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
