@@ -24,6 +24,9 @@ public class PaymentService {
     }
 
     @HystrixCommand(fallbackMethod = "paymentInfoTimeOutHandler", commandProperties = {
+            // 这里是服务提供端
+            // 这里可以理解为等待业务处理3s 若是3s没处理完则进行降级
+            // 或者业务报错也会进行降级
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value="3000")
     })
     public String paymentInfoTimeOut(Integer id) {
