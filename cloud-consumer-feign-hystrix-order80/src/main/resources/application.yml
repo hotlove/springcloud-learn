@@ -11,3 +11,21 @@ eureka:
 feign:
   hystrix:
     enabled: true
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            # 设置hystrix的超时时间为4000ms, 之后才调用降级方法
+            # 这里配置的是hystrix的默认超时时间，一般建议是小于ribbon
+            # 如果feign开启了hystrix那么他么的超时时间可以使用这个，但是其他具体指定了超时时间则使用具体的配置
+            # 说白了，这里是全局默认的hystrix超时时间设置，如果不设置默认是1s
+            timeoutInMilliseconds: 4000
+
+ribbon:
+  #指的是建立连接后从服务器读取到可用资源所用的时间
+  ReadTimeout: 5000
+  #指的是建立连接所用的时间，适用于网络状况正常的情况下,两端连接所用的时间
+  ConnectTimeout: 5000

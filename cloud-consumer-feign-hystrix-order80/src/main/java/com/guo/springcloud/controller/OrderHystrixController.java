@@ -18,7 +18,11 @@ import javax.annotation.Resource;
  */
 @RestController
 @Slf4j
-@DefaultProperties(defaultFallback = "defaultFallBack")
+// 这里注意超时时间是1s 如果要指定commandProperties需要小于1s才会有效果
+// 如果需要更大的超时时间，就需要具体的在@HystrixCommand注解中配置
+@DefaultProperties(defaultFallback = "defaultFallBack", commandProperties = {
+        @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value="1500")
+})
 public class OrderHystrixController {
 
     @Resource
