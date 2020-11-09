@@ -1,0 +1,23 @@
+package com.guo.springcloud.controller;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * @Auther: hotlove_linx
+ * @Date: 2020/11/9 22:27
+ * @Description:
+ */
+@RestController
+public class PaymentController {
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    @GetMapping(value = "/payment/nacos/{id}")
+    public String getPayment(@PathVariable("id") Integer id) {
+        return "nacos registry, serverport"+serverPort+"\t id" + id;
+    }
+}
