@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @Auther: hotlove_linx
  * @Date: 2020/12/7 22:26
@@ -23,5 +25,11 @@ public class FlowLimitController {
     {
         log.info(Thread.currentThread().getName()+"\t"+"...testB");
         return "------testB";
+    }
+
+    @GetMapping("/sleep")
+    public String testSleep() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(1);
+        return "sleep....";
     }
 }
