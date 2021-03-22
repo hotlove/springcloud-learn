@@ -1,10 +1,24 @@
 import com.alibaba.fastjson.JSON;
 import com.guo.springcloud.Search9200;
 import com.guo.springcloud.config.ElasticSearchConfig;
+import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +68,81 @@ public class SearchTest {
         indexRequest.source(jsonString, XContentType.JSON);// 要保存的内容
 
         // 真正的保存信息到es
-        IndexResponse indexResponse = client.index(indexRequest, ElasticSearchConfig.COMMON_OPTIONS);
+//        IndexResponse indexResponse = client.index(indexRequest, ElasticSearchConfig.COMMON_OPTIONS); // 这里使用自定义的报错了
+        IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
 
         // 提取响应数据
         System.out.println(indexResponse);
+
+
+    }
+
+    /**
+     * 查询所有
+     */
+    @Test
+    public void searchAll() throws IOException {
+        SearchRequest searchRequest = new SearchRequest("users");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchSourceBuilder.from(1);
+        searchSourceBuilder.size(10);
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse search = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println(search);
+        SearchHits hits = search.getHits();
+        for (SearchHit hit : hits) {
+            System.out.println(hit.getSourceAsString());
+        }
+
+    }
+
+    @Test
+    public void searchBoolQuery() throws IOException {
+        SearchRequest searchRequest = new SearchRequest("newbank");
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder
+                .must(QueryBuilders.matchQuery("address", "mill"))
+                .must(QueryBuilders.matchQuery("gender", "M"))
+                .mustNot(QueryBuilders.termQuery("age", 18))
+                .should(QueryBuilders.matchQuery("lastname", "Wallace"))
+                .filter(QueryBuilders.rangeQuery("balance").lte(19648).gte(30000));
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(boolQueryBuilder);
+
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println(searchResponse);
+
+
+    }
+
+    /**
+     * 聚合查询
+     */
+    @Test
+    public void aggsQuery() throws IOException {
+        TermsAggregationBuilder termsAggregationBuilder =
+                AggregationBuilders.terms("ageAgg")
+                        .field("age").
+                        subAggregation(
+                                AggregationBuilders
+                                .avg("blanceAvg")
+                                .field("balance"));
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchSourceBuilder.aggregation(termsAggregationBuilder);
+
+        SearchRequest searchRequest = new SearchRequest("newbank");
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println(searchResponse);
 
 
     }
