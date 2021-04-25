@@ -12,6 +12,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 @EnableDiscoveryClient
 public class Search9200 {
+    // 测试
     public static void main(String[] args) {
         SpringApplication.run(Search9200.class, args);
     }
