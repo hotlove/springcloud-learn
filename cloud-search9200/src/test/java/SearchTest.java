@@ -28,6 +28,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 import javax.swing.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @Date: 2021/3/19 9:18
@@ -35,12 +41,110 @@ import java.io.IOException;
  * @Since JDK 1.8
  * @Description:
  */
+
+
+class PrintScource {
+
+    private int numer = 1;
+    private Lock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+
+    public void print5() throws InterruptedException {
+        lock.lock();
+        try {
+            while (numer != 1) {
+                condition.await();
+            }
+
+            for (int i = 1; i <= 5; i++) {
+                System.out.println(Thread.currentThread().getName()+":"+i);
+            }
+
+            numer = 2;
+            condition.signalAll();
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void print10() throws InterruptedException {
+        lock.lock();
+        try {
+            while (numer != 2) {
+                condition.await();
+            }
+
+            for (int i = 1; i <= 10; i++) {
+                System.out.println(Thread.currentThread().getName()+":"+i);
+            }
+
+            numer = 1;
+            condition.signalAll();
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+}
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {Search9200.class})
 public class SearchTest {
 
     @Resource
     private RestHighLevelClient client;
+
+    @Test
+    public void testThreadLearn() throws ExecutionException, InterruptedException {
+        Collections.synchronizedList(new ArrayList<>());
+
+        new CopyOnWriteArrayList<>();
+        new CopyOnWriteArraySet<>();
+        PrintScource printScource = new PrintScource();
+        new Thread(() -> {
+            try {
+                for (int i = 0; i < 10; i++) {
+                    printScource.print5();
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "A").start();
+
+        new Thread(() -> {
+            try {
+                for (int i = 0; i < 10; i++) {
+                    printScource.print10();
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }, "B").start();
+
+
+        FutureTask task = new FutureTask(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                return null;
+            }
+        });
+
+        new Thread(task).start();
+        task.get();
+
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1,
+                1L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        return new Thread(r, "银行业务");
+                    }
+                });
+    }
 
     @Test
     public void testClient() {
