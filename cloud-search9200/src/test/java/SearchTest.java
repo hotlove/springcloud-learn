@@ -28,11 +28,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 import javax.swing.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -158,6 +158,17 @@ public class SearchTest {
      */
     @Test
     public void indexData() throws IOException {
+
+        List<String> list = new ArrayList<>();
+
+        Map<String, String> map = new HashMap<>();
+
+        LockSupport.park();
+
+        ReentrantLock lock = new ReentrantLock();
+        lock.lock();
+
+        ThreadLocal<String> threadLocal = new ThreadLocal<>();
         IndexRequest indexRequest = new IndexRequest("users");
         indexRequest.id("1");// 数据id
         // 第一种方式
